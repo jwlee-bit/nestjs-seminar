@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { PostModel, PostsService } from './posts.service';
 
 @Controller('posts')
@@ -6,7 +14,7 @@ export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Get()
-  getPosts(): PostModel[] {
+  getPosts(): Promise<PostModel[]> {
     return this.postsService.getAllPosts();
   }
 
@@ -21,9 +29,7 @@ export class PostsController {
     @Body('title') title: string,
     @Body('content') content: string,
   ) {
-    return this.postsService.createPost(
-      author, title, content
-    );
+    return this.postsService.createPost(author, title, content);
   }
 
   @Patch(':id')
@@ -33,9 +39,7 @@ export class PostsController {
     @Body('title') title?: string,
     @Body('content') content?: string,
   ) {
-    return this.postsService.updatePost(
-      +id, author, title, content
-    );
+    return this.postsService.updatePost(+id, author, title, content);
   }
 
   @Delete(':id')
