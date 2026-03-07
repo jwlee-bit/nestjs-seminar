@@ -1,12 +1,44 @@
-import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
+import {
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Role, UserModel } from './entity/user.entity';
+import { Repository } from 'typeorm';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    @InjectRepository(UserModel)
+    private readonly userRepository: Repository<UserModel>,
+  ) {}
+
+  @Post('user')
+  postUser() {
+    return this.userRepository.save({
+      title: 'test title',
+      role: Role.ADMIN,
+    });
+  }
 
   @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  getUsers() {
+    return this.userRepository.find();
+  }
+
+  @Patch('user/:id')
+  async patchUser(@Param('id') id: number) {
+    const user = await this.userRepository.findOneBy({ id });
+
+    if (!user) throw new NotFoundException('User not found');
+
+    return this.userRepository.save({
+      ...user,
+      title: user.title + '0',
+    });
   }
 }
