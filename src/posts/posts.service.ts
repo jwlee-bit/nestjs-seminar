@@ -3,39 +3,37 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PostsModel } from './entities/posts.entity';
 
-export interface PostModel {
-  id: number;
-  author: string;
-  title: string;
-  content: string;
-  likeCount: number;
-  commentCount: number;
-}
-
 @Injectable()
 export class PostsService {
   constructor(
     @InjectRepository(PostsModel)
-    private readonly postsRepository: Repository<PostModel>,
+    private readonly postsRepository: Repository<PostsModel>,
   ) {}
 
   async getAllPosts() {
-    return this.postsRepository.find();
+    return this.postsRepository.find({
+      relations: ['author'],
+    });
   }
 
   async getPostById(id: number) {
-    const post = await this.postsRepository.findOneBy({ id });
+    const post = await this.postsRepository.findOne({
+      where: { id },
+      relations: ['author'],
+    });
     if (!post) {
       throw new NotFoundException(`Post with id ${id} not found`);
     }
     return post;
   }
 
-  async createPost(author: string, title: string, content: string) {
+  async createPost(authorId: number, title: string, content: string) {
     // 1) create -> 저장할 객체 생성
     // 2) save -> 객체 저장 (create에서 생성한 객체로)
     const post = this.postsRepository.create({
-      author,
+      author: {
+        id: authorId,
+      },
       title,
       content,
       likeCount: 0,
@@ -46,12 +44,7 @@ export class PostsService {
     return newPost;
   }
 
-  async updatePost(
-    postId: number,
-    author?: string,
-    title?: string,
-    content?: string,
-  ) {
+  async updatePost(postId: number, title?: string, content?: string) {
     /**
      * save 기능
      * 1) id가 존재하는 경우 -> 해당 id의 데이터 업데이트
@@ -63,10 +56,6 @@ export class PostsService {
 
     if (!post) {
       throw new NotFoundException(`Post with id ${postId} not found`);
-    }
-
-    if (author) {
-      post.author = author;
     }
 
     if (title) {
