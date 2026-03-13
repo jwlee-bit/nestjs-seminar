@@ -3,10 +3,14 @@ import {
   CreateDateColumn,
   Entity,
   Generated,
+  OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   VersionColumn,
 } from 'typeorm';
+import { ProfileModel } from './prefile.entity';
+import { PostModel } from './post.entity';
 
 export enum Role {
   USER = 'user',
@@ -26,28 +30,31 @@ export class UserModel {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({
-    // 데이터베이스에서 인지하는 컬럼 타입
-    // 자동 유추
-    type: 'varchar',
-    // 데이터 베이스 칼럼 이름
-    // 자동 유추
-    name: 'title',
-    // 길이
-    // 입력 할 수 있는 글자의 길이
-    length: 100, // -> 지원안되는 타입있음
-    // nullable -> null 허용 여부
-    nullable: false,
-    // true면 처음 저장할때만 값 지정 가능
-    // 이후에는 값 변경 불가능
-    update: true,
-    select: true, // false면 조회할 때 해당 컬럼이 조회되지 않는다.
-    default: 'default title', // 컬럼의 기본값
-    // 컬럼중 유일무이한 값이 되어야함
-    // 유니크 제약 조건 기본값 false
-    unique: true,
-  })
-  title: string;
+  @Column()
+  email: string;
+
+  // @Column({
+  //   // 데이터베이스에서 인지하는 컬럼 타입
+  //   // 자동 유추
+  //   type: 'varchar',
+  //   // 데이터 베이스 칼럼 이름
+  //   // 자동 유추
+  //   name: 'title',
+  //   // 길이
+  //   // 입력 할 수 있는 글자의 길이
+  //   length: 100, // -> 지원안되는 타입있음
+  //   // nullable -> null 허용 여부
+  //   nullable: false,
+  //   // true면 처음 저장할때만 값 지정 가능
+  //   // 이후에는 값 변경 불가능
+  //   update: true,
+  //   select: true, // false면 조회할 때 해당 컬럼이 조회되지 않는다.
+  //   default: 'default title', // 컬럼의 기본값
+  //   // 컬럼중 유일무이한 값이 되어야함
+  //   // 유니크 제약 조건 기본값 false
+  //   unique: true,
+  // })
+  // title: string;
 
   @Column({
     type: 'enum',
@@ -78,4 +85,30 @@ export class UserModel {
   @Column()
   @Generated('uuid')
   additionalId: string;
+
+  @OneToOne(() => ProfileModel, (profile) => profile.user, {
+    // find() 마다 가져올 relation
+    eager: true, // eager 옵션을 사용하면 UserModel을 조회할 때 ProfileModel도 자동으로 함께 조회된다. 즉, UserModel과 ProfileModel이 항상 함께 로드된다.
+
+    // 저장할때 relation을 한번에 같이 저장가능
+    // false시 동시저장을 막음
+    cascade: true, // cascade 옵션을 사용하면 UserModel을 저장할 때 ProfileModel도 자동으로 함께 저장된다. 즉, UserModel과 ProfileModel이 함께 저장되고 업데이트된다.
+    nullable: true, // 기본값 true
+    deferrable: 'INITIALLY DEFERRED', // deferrable 옵션은 데이터베이스에서 외래 키 제약 조건의 평가 시점을 제어하는 데 사용됩니다. 'INITIALLY DEFERRED'로 설정하면 트랜잭션이 커밋될 때까지 외래 키 제약 조건의 평가가 지연됩니다. 즉, UserModel과 ProfileModel 간의 관계가 트랜잭션이 완료될 때까지 유효하지 않을 수 있습니다.
+    // no-action 아무것도 안함
+    // cascade -> 참조하는 row도 같이 삭제
+    // set null -> 참조하는 row의 id를 null로 변경
+    // set default -> 참조하는 row의 id를 default값으로 변경
+    // restrict -> 참조하는 row가 있으면 삭제 불가능
+    onDelete: 'CASCADE', // onDelete 옵션을 사용하면 UserModel이 삭제될 때 ProfileModel도 자동으로 함께 삭제된다. 즉, UserModel과 ProfileModel이 함께 삭제된다.
+  })
+  profile: ProfileModel;
+
+  @OneToMany(() => PostModel, (post) => post.author)
+  posts: PostModel[];
+
+  @Column({
+    default: 0,
+  })
+  count: number;
 }
