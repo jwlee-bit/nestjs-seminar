@@ -16,7 +16,7 @@ export class AuthController {
     };
   }
 
-  @Post('token/access')
+  @Post('token/refresh')
   postTokenRefresh(@Headers('authorization') rawToken: string) {
     const token = this.authService.extractTokenFromHeader(rawToken, true);
 
