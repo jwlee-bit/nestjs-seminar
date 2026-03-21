@@ -9,7 +9,7 @@ import bcrypt from 'bcrypt';
 type JwtToken = {
   email: string;
   sub: number;
-  type: string;
+  type: 'access' | 'refresh';
 };
 
 @Injectable()
