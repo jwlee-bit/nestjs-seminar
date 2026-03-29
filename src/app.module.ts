@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+import { Module, ValidationPipe } from '@nestjs/common';
+import { APP_PIPE } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PostsModule } from './posts/posts.module';
@@ -9,6 +10,7 @@ import { ConfigModule } from '@nestjs/config';
 
 // zod를 사용한 환경변수 검증 예시 (적용 시 주석 해제 후 사용)
 // import { z } from 'zod';
+import { CommonModule } from './common/common.module';
 //
 // const envSchema = z.object({
 //   JWT_SECRET_KEY: z.string().min(1),
@@ -42,8 +44,15 @@ import { ConfigModule } from '@nestjs/config';
     }),
     UsersModule,
     AuthModule,
+    CommonModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_PIPE,
+      useClass: ValidationPipe,
+    },
+  ],
 })
 export class AppModule {}
