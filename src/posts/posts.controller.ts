@@ -4,22 +4,28 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { PostsModel } from './entities/posts.entity';
 import { AccessTokenGuard } from 'src/auth/guard/bearer-token.guard';
 import { User } from 'src/users/decorator/user.decorator';
+import { CreatePostDto } from './dto/create-post.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
+import { PagintePostDto } from './dto/paginte-post.dto';
 
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Get()
-  getPosts(): Promise<PostsModel[]> {
-    return this.postsService.getAllPosts();
+  getPosts(@Query() query: PagintePostDto) {
+    // return this.postsService.getAllPosts();
+    return this.postsService.cursorPaginatePosts(query);
   }
 
   @Get(':id')
@@ -29,21 +35,16 @@ export class PostsController {
 
   @Post()
   @UseGuards(AccessTokenGuard)
-  postPosts(
-    @User('id') userId: number,
-    @Body('title') title: string,
-    @Body('content') content: string,
-  ) {
-    return this.postsService.createPost(userId, title, content);
+  postPosts(@User('id') userId: number, @Body() body: CreatePostDto) {
+    return this.postsService.createPost(userId, body);
   }
 
   @Patch(':id')
   patchPosts(
-    @Param('id') id: string,
-    @Body('title') title?: string,
-    @Body('content') content?: string,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: UpdatePostDto,
   ) {
-    return this.postsService.updatePost(+id, title, content);
+    return this.postsService.updatePost(id, body);
   }
 
   @Delete(':id')
