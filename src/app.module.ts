@@ -15,6 +15,7 @@ import { ConfigModule } from '@nestjs/config';
 // zod를 사용한 환경변수 검증 예시 (적용 시 주석 해제 후 사용)
 // import { z } from 'zod';
 import { CommonModule } from './common/common.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
 //
 // const envSchema = z.object({
 //   JWT_SECRET_KEY: z.string().min(1),
@@ -49,6 +50,10 @@ import { CommonModule } from './common/common.module';
     UsersModule,
     AuthModule,
     CommonModule,
+    ServeStaticModule.forRoot({
+      rootPath: 'uploads',
+      serveRoot: '/uploads',
+    }),
   ],
   controllers: [AppController],
   providers: [
