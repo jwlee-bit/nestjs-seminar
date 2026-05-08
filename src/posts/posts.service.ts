@@ -150,8 +150,9 @@ export class PostsService {
     };
   }
 
-  async getPostById(id: number) {
-    const post = await this.postsRepository.findOne({
+  async getPostById(id: number, qr?: QueryRunner) {
+    const repo = this.getRepository(qr);
+    const post = await repo.findOne({
       where: { id },
       relations: DEFAULT_POST_FIND_OPTIONS.relations,
     });
